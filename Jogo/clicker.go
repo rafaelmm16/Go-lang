@@ -9,14 +9,15 @@ import (
 	"github.com/rivo/tview"
 )
 
+var pointsLock sync.Mutex
+
 func main() {
 	// Crie uma aplicação tview
 	app := tview.NewApplication()
 
 	// Variáveis para controlar os pontos e atualizações de pontos
 	var (
-		points     int
-		pointsLock sync.Mutex
+		points int
 	)
 
 	// componente Textview para mostrar os pontos
@@ -45,9 +46,7 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(1 * time.Second)
-			pointsLock.Lock()
-			points++
-			pointsLock.Unlock()
+			increasePoints(points, 10, pointsLock)
 			app.QueueUpdateDraw(func() {
 				updatePoints()
 			})
@@ -63,4 +62,10 @@ func main() {
 	if err := app.SetRoot(flex, true).Run(); err != nil {
 		fmt.Println(err)
 	}
+}
+
+func increasePoints(points int, amount int, pointsLock sync.Mutex) {
+	pointsLock.Lock()
+	points += amount
+	pointsLock.Unlock()
 }
